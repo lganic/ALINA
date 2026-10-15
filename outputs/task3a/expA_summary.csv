@@ -1,0 +1,11 @@
+method,family,detection_rate,alina_ms,paper_P,paper_R,paper_F1,pix_P,pix_R,pix_F1,roi_ms,failures,roi_iou
+manual,manual (Task 2),29.33,3369.05,62.82,56.34,53.92,70.59,59.07,59.31,,0.0,1.0
+prior,statistical baseline,36.67,3696.75,11.48,1.8,3.12,11.43,0.41,0.8,0.24,0.0,0.03
+hough,classical CV,39.33,1622.8,52.75,53.87,53.29,58.82,58.65,58.74,74.8,0.0,0.11
+vlm_zeroshot,multimodal LLM,36.67,3707.44,11.48,1.8,3.12,11.43,0.41,0.8,626.52,3.0,0.03
+vlm_fewshot,multimodal LLM,36.67,3677.41,11.48,1.8,3.12,11.43,0.41,0.8,34.27,3.0,0.03
+gdino,open-vocabulary detection,24.0,2173.84,51.3,56.13,53.59,58.82,58.82,58.82,5034.34,0.0,0.27
+grounded_sam,promptable segmentation,20.0,50.25,0.0,0.0,0.0,0.0,0.0,0.0,8323.69,0.0,0.01
+m2f_lanes,pretrained road-marking segmentation,36.67,1679.94,52.99,53.55,53.26,58.82,58.62,58.72,1272.76,0.0,0.24
+regressor,supervised learning,26.67,1927.28,0.0,0.0,0.0,0.0,0.0,0.0,20.23,0.0,0.06
+authors_ALINA (ref),external,,,92.86,99.1,95.83,99.71,100.0,99.85,,,
