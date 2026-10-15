@@ -1,5 +1,11 @@
 # ALINA: Advanced Line Identification and Notation Algorithm
 
+
+## TO RUN EXPERIMENTS:
+
+Just clone, and run the task3a_auto_roi notebook. Or just read the results that are already in the notebook. It takes about 2 hours to run end to end on my machine.
+
+
 <p align="center">
   <a href="https://arxiv.org/abs/2406.08775" target="_blank" rel="noopener noreferrer">Paper</a> | <a href="https://khanhafeez.github.io/alina-project-page/" target="_blank" rel="noopener noreferrer">Website</a> | <a href="https://drive.google.com/file/d/1PRiW-VAJYTePNzT9zAQ2bZFvNlt-OIfU/view?usp=sharing" target="_blank" rel="noopener noreferrer">CVPR 2024 Presentation</a>
 </p>
