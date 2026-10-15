@@ -1,0 +1,1 @@
+alina label --input-dir data/Raw_Data/vidd_1 --output-images-dir outputs/manual/vidd_1/annotated --output-coords-dir outputs/manual/vidd_1/coords --log-file outputs/manual/vidd_1/timing.log
