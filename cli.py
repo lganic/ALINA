@@ -13,6 +13,17 @@ from eval.superimpose import overlay_coords
 from eval.evaluate import run_evaluation
 
 
+def _thresholder(args: argparse.Namespace):
+    """None keeps ALINA's original fixed HSV threshold."""
+    from alina import threshold
+
+    if args.threshold_model:
+        return threshold.load_thresholder(args.threshold_model)
+    if args.threshold_method != "manual":
+        return threshold.build(args.threshold_method)
+    return None
+
+
 def _cmd_label(args: argparse.Namespace) -> None:
     if not args.image and not args.input_dir:
         raise SystemExit("alina label: provide either --input-dir (batch mode) or --image (single-image mode)")
@@ -30,6 +41,7 @@ def _cmd_label(args: argparse.Namespace) -> None:
         mask_ignore_left_columns=args.mask_ignore_left_columns,
         fast_traversal=args.fast_traversal,
     )
+    thresholder = _thresholder(args)
 
     if args.image:
         image_path = Path(args.image)
@@ -56,7 +68,7 @@ def _cmd_label(args: argparse.Namespace) -> None:
     reference_image = sorted(config.input_dir.glob("*.jpg"))[0]
     print("Draw the ROI: click Bottom-Left, Top-Left, Top-Right, Bottom-Right, then press any key.")
     roi_points = select_roi(str(reference_image))
-    run_batch(config, roi_points)
+    run_batch(config, roi_points, thresholder=thresholder)
 
 
 def _cmd_video_to_frames(args: argparse.Namespace) -> None:
@@ -105,6 +117,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--yellow-lower", dest="yellow_lower", type=int, nargs=3, default=[0, 70, 170], metavar=("H", "S", "V"))
     p.add_argument("--yellow-upper", dest="yellow_upper", type=int, nargs=3, default=[255, 255, 255], metavar=("H", "S", "V"))
     p.add_argument("--mask-ignore-left-columns", dest="mask_ignore_left_columns", type=int, default=300)
+    p.add_argument("--threshold-method", dest="threshold_method", default="manual",
+                   choices=["manual", "otsu_lab", "gmm_lab"],
+                   help="Color threshold step: manual HSV bounds (original) or a training-free adaptive method.")
+    p.add_argument("--threshold-model", dest="threshold_model", default=None,
+                   help="Trained thresholder from task5_color_threshold.py (.json / .joblib / .pt); overrides --threshold-method.")
+    p.add_argument("--fast-traversal", dest="fast_traversal", action="store_true",
+                   help="Use the O(pixels) CIRCLEDAT equivalent (identical output, much faster).")
     p.add_argument("--image", default=None, help="Process a single image instead of the whole --input-dir.")
     p.add_argument("--show", action="store_true", help="Display the result window (single-image mode only).")
     p.set_defaults(func=_cmd_label)

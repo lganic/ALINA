@@ -22,7 +22,16 @@ class ImageResult:
     elapsed_seconds: float
 
 
-def process_image(img: np.ndarray, roi_points: np.ndarray, config: PipelineConfig) -> tuple[np.ndarray, np.ndarray, bool]:
+def dst_rect(config: PipelineConfig) -> tuple[int, int, int, int]:
+    # (x0, y0, x1, y1) of the bird's-eye rectangle the ROI is warped onto
+    r = config.roi
+    return r.dst_top_left[0], r.dst_top_left[1], r.dst_bottom_right[0], r.dst_bottom_right[1]
+
+
+def process_image(img: np.ndarray, roi_points: np.ndarray, config: PipelineConfig,
+                  thresholder=None, debug: dict | None = None) -> tuple[np.ndarray, np.ndarray, bool]:
+    """thresholder: optional callable (warped_bgr, dst_rect) -> uint8 mask replacing step 3.5.
+    debug: if given, receives the intermediate warped image, mask and transforms."""
     final_img = img.copy()
     no_lines_img = img.copy()
 
@@ -41,15 +50,22 @@ def process_image(img: np.ndarray, roi_points: np.ndarray, config: PipelineConfi
     M = cv2.getPerspectiveTransform(roi_quad, dst)
     warped = cv2.warpPerspective(img, M, (img.shape[1], img.shape[0]))
 
-    # 3.4 color feature normalization (HSV, per-channel min-max)
-    color_features = normalize_color_features(warped)
+    if thresholder is None:
+        # 3.4 color feature normalization (HSV, per-channel min-max)
+        color_features = normalize_color_features(warped)
 
-    # 3.5 HSV-based color thresholding -> binary mask of candidate line pixels
-    lower = np.array(config.yellow_lower)
-    upper = np.array(config.yellow_upper)
-    mask = cv2.inRange(color_features, lower, upper)
+        # 3.5 HSV-based color thresholding -> binary mask of candidate line pixels
+        lower = np.array(config.yellow_lower)
+        upper = np.array(config.yellow_upper)
+        mask = cv2.inRange(color_features, lower, upper)
+    else:
+        # 3.4-3.5 replaced by a learned / adaptive thresholder (alina.threshold)
+        mask = thresholder(warped, dst_rect(config))
     if config.mask_ignore_left_columns > 0:
         mask[:, :config.mask_ignore_left_columns] = 0
+
+    if debug is not None:
+        debug.update(warped=warped, mask=mask.copy(), M=M, roi_quad=roi_quad, dst=dst)
 
     # 3.6 histogram analysis -> vertical projection, peak column
     avg_pixel, peak_value = calc_histogram(mask, min_white_pixels=config.min_white_pixels)
@@ -61,10 +77,6 @@ def process_image(img: np.ndarray, roi_points: np.ndarray, config: PipelineConfi
     # 3.8 CIRCLEDAT -> traverse from the peak to collect all connected line pixels
     binary = mask.copy()
     binary[avg_pixel[1]][avg_pixel[0]] = 255
-    line_marking_pixels = circular_threshold_pixel_discovery_and_traversal(
-        binary, avg_pixel[0], avg_pixel[1], config.circular_threshold
-    )
-
     height, width = binary.shape[:2]
     black_img = np.zeros((height, width), dtype=np.uint8)
     if config.fast_traversal:
@@ -92,7 +104,7 @@ def process_image(img: np.ndarray, roi_points: np.ndarray, config: PipelineConfi
     return final_img, coords, True
 
 
-def run_batch(config: PipelineConfig, roi_points: np.ndarray) -> list[ImageResult]:
+def run_batch(config: PipelineConfig, roi_points: np.ndarray, thresholder=None) -> list[ImageResult]:
     image_filenames = sorted(
         f for f in config.input_dir.iterdir() if f.suffix.lower() == ".jpg"
     )
@@ -124,7 +136,7 @@ def run_batch(config: PipelineConfig, roi_points: np.ndarray) -> list[ImageResul
             if img is None:
                 continue
 
-            annotated, coords, had_lines = process_image(img, roi_points, config)
+            annotated, coords, had_lines = process_image(img, roi_points, config, thresholder=thresholder)
             elapsed = time.perf_counter() - start
 
             text_filename = path.stem + ".txt"
