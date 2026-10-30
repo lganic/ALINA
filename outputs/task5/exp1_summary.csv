@@ -1,0 +1,8 @@
+method,family,n_seeds,detection_rate,paper_P,paper_R,paper_F1,pix_F1,bnd_P,bnd_R,bnd_F1,teacher_iou,thr_ms,alina_ms
+manual,original ALINA (fixed HSV box),1,78.67,68.99,79.99,73.35,69.67,72.87,84.06,76.05,0.49,9.91,36.45
+otsu_lab,classical adaptive (per-frame Otsu on b*),1,96.67,68.15,80.74,73.11,69.76,75.64,83.94,78.37,0.57,5.8,33.64
+gmm_lab,unsupervised ML (per-frame GMM),3,86.22,45.42,79.6,51.52,35.56,57.49,83.11,65.16,0.43,200.52,231.32
+learned_box,"supervised, learned HSV bounds",3,93.33,64.13,81.87,71.36,69.8,70.2,83.96,74.73,0.58,9.8,36.86
+gbdt,supervised ML (gradient-boosted trees),3,89.33,63.51,83.23,71.56,66.51,63.14,79.89,69.01,0.67,2276.62,2303.48
+unet,deep learning (tiny U-Net),3,93.78,69.24,77.62,71.11,65.07,67.66,78.19,68.38,0.58,39.78,68.59
+m2f_teacher,"foundation model (Mask2Former, zero-shot)",1,85.33,66.68,82.95,73.3,70.11,67.28,82.03,71.06,,931.85,42.02
