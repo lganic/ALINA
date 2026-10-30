@@ -11,7 +11,7 @@ from .color import normalize_color_features
 from .config import PipelineConfig
 from .histogram import calc_histogram
 from .roi import roi_points_to_quad
-from .traversal import circular_threshold_pixel_discovery_and_traversal
+from .traversal import circledat_fast, circular_threshold_pixel_discovery_and_traversal
 
 
 @dataclass
@@ -67,8 +67,17 @@ def process_image(img: np.ndarray, roi_points: np.ndarray, config: PipelineConfi
 
     height, width = binary.shape[:2]
     black_img = np.zeros((height, width), dtype=np.uint8)
-    for x, y in line_marking_pixels:
-        cv2.circle(black_img, (x, y), 1, 255, -1)
+    if config.fast_traversal:
+        pts = circledat_fast(binary, avg_pixel[0], avg_pixel[1], config.circular_threshold)
+        black_img[pts[:, 1], pts[:, 0]] = 255
+        # same footprint as cv2.circle(radius=1, filled): a 3x3 cross
+        black_img = cv2.dilate(black_img, cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3)))
+    else:
+        line_marking_pixels = circular_threshold_pixel_discovery_and_traversal(
+            binary, avg_pixel[0], avg_pixel[1], config.circular_threshold
+        )
+        for x, y in line_marking_pixels:
+            cv2.circle(black_img, (x, y), 1, 255, -1)
 
     # 3.9 frame unwarping -> map detected pixels back to the original perspective
     Minv = cv2.getPerspectiveTransform(dst, roi_quad)

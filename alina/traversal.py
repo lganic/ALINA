@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from itertools import product
 
+import cv2
 import numpy as np
 
 
@@ -33,3 +34,24 @@ def circular_threshold_pixel_discovery_and_traversal(img: np.ndarray, x: int, y:
             visited.add((nx, ny))
 
     return line_marking_pixels
+
+
+def circledat_fast(img: np.ndarray, x: int, y: int, threshold: int) -> np.ndarray:
+    """Same pixel set as circular_threshold_pixel_discovery_and_traversal, in O(pixels).
+
+    The traversal links two line pixels when both |dx| and |dy| are <= threshold. Dilating every
+    line pixel into a (threshold+1)x(threshold+1) square makes two squares 8-adjacent or
+    overlapping under exactly that condition, so the 8-connected component of the dilated
+    mask that contains the seed holds exactly the pixels the traversal reaches.
+    Returns an (N, 2) array of (x, y).
+    """
+    binary = (img == 255).astype(np.uint8)
+    if not binary[y, x]:
+        return np.empty((0, 2), dtype=np.int64)
+    # squares of side t (same anchor for every pixel) touch or overlap iff |dx| <= t and |dy| <= t
+    kernel = np.ones((threshold, threshold), np.uint8)
+    anchor = (threshold // 2, threshold // 2)
+    grown = cv2.dilate(binary, kernel, anchor=anchor)
+    _, labels = cv2.connectedComponents(grown, connectivity=8)
+    ys, xs = np.nonzero((labels == labels[y, x]) & (binary > 0))
+    return np.column_stack((xs, ys))

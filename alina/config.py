@@ -30,6 +30,9 @@ class PipelineConfig:
     # zero out mask columns 0..mask_ignore_left_columns before traversal
     mask_ignore_left_columns: int = 300
 
+    # use the O(pixels) CIRCLEDAT equivalent (identical output, see traversal.circledat_fast)
+    fast_traversal: bool = False
+
     roi: ROIConfig = field(default_factory=ROIConfig)
 
     def __post_init__(self) -> None:

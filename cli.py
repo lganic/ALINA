@@ -28,6 +28,7 @@ def _cmd_label(args: argparse.Namespace) -> None:
         yellow_lower=tuple(args.yellow_lower),
         yellow_upper=tuple(args.yellow_upper),
         mask_ignore_left_columns=args.mask_ignore_left_columns,
+        fast_traversal=args.fast_traversal,
     )
 
     if args.image:
@@ -35,7 +36,7 @@ def _cmd_label(args: argparse.Namespace) -> None:
         print("Draw the ROI: click Bottom-Left, Top-Left, Top-Right, Bottom-Right, then press any key.")
         roi_points = select_roi(str(image_path))
         img = cv2.imread(str(image_path))
-        annotated, coords, had_lines = process_image(img, roi_points, config)
+        annotated, coords, had_lines = process_image(img, roi_points, config, thresholder=thresholder)
 
         cv2.imwrite(str(config.output_images_dir / image_path.name), annotated)
         (config.output_coords_dir / f"{image_path.stem}.txt").write_text(
