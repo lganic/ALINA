@@ -7,6 +7,8 @@ Just clone, and run the task3a_auto_roi notebook. Or just read the results that 
 
 ### Assignment 5: ML replacements for the color threshold
 
+[Demo On YouTube](https://youtu.be/BVgxmjMP6r8)
+
 Report: [reports/task5_report.md](reports/task5_report.md). Six automatic thresholders (Otsu on Lab b*, per-frame GMM, a learned HSV box, gradient-boosted trees, a tiny U-Net, and zero-shot Mask2Former) are compared against ALINA's manual HSV bounds. The supervised ones are trained on Mask2Former pseudo-labels, leave-one-video-out, with 3 seeds.
 
 ```bash
@@ -21,7 +23,6 @@ Use the selected method (Otsu on b*) or a trained model in the pipeline:
 python cli.py label --input-dir data/Raw_Data/vidd_1 --output-images-dir out/img --output-coords-dir out/txt --threshold-method otsu_lab --fast-traversal
 python cli.py label ... --threshold-model outputs/task5/models/unet_no-vidd_1_seed0.pt
 ```
-
 
 <p align="center">
   <a href="https://arxiv.org/abs/2406.08775" target="_blank" rel="noopener noreferrer">Paper</a> | <a href="https://khanhafeez.github.io/alina-project-page/" target="_blank" rel="noopener noreferrer">Website</a> | <a href="https://drive.google.com/file/d/1PRiW-VAJYTePNzT9zAQ2bZFvNlt-OIfU/view?usp=sharing" target="_blank" rel="noopener noreferrer">CVPR 2024 Presentation</a>
