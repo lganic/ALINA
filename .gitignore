@@ -2,3 +2,6 @@ __pycache__
 outputs/task3a/runs
 venv
 *.egg-info
+outputs/task5/_tmp
+outputs/task5/teacher
+outputs/task5/models
